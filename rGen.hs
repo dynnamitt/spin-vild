@@ -1,11 +1,11 @@
 import System.Random
+import Data.List
 
 main = do
   -- getArgs ? Name , cash, escorts, time ...
   gen <- getStdGen
-  putStr (show (randInts gen 36))
-  -- FIXME \n infifine loop that will
-  -- stream , intersperse w \n
+  putStr $ show $ intersperse '\n' (map show (randInts gen 36))
+
 
 
 randInts :: StdGen -> Int -> [Int]
