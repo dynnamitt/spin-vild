@@ -4,8 +4,7 @@ import Data.List
 main = do
   -- getArgs ? Name , cash, escorts, time ...
   gen <- getStdGen
-  putStr $ show $ intersperse '\n' (map show (randInts gen 36))
-
+  putStr $ concat . intersperse "\n" $ map show (randInts gen 36)
 
 
 randInts :: StdGen -> Int -> [Int]
