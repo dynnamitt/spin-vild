@@ -1,17 +1,39 @@
 import System.Random
 import Data.List
+import System.Environment
+
 
 main = do
-  -- getArgs ? Name , cash, escorts, time ...
+  args <- getArgs 
+  -- arg0=numColors , arg1=tileSizes, arg2=maxTiles
+  let numColors = read $ args !! 0
+  let tileSizes = read $ args !! 1 -- !! special logic
+  let maxTiles = read $ args !! 2
+  -- TODO maybe?either fix if no args given
+  -- TODO usage print and exit
   genA <- getStdGen
   genB <- newStdGen
-  putStr $ show $ take 100 $ zip ( randInts genA 2 ) ( randInts genB 1 )
+  let colors = randInts genA numColors
+  let widths = randInts genB tileSizes
+  -- TODO inject \n after x small-tiles 
+  --   (a big tile counts as 2 small)
+  putStr $ concat.map showTile $ take maxTiles $ zip widths colors
   -- putStr $ intsToLines $ randInts gen 3
 
-joinedInts :: (Int,Int) -> String
-joinedInts (a,b) = show a ++ " " ++ show b
+type TileWidth = Int
+type Color = Int
 
-intsToLines :: [Int] -> [Char]
+data Tile = Small Color |
+            Big Color
+
+
+-- always CAPPING size down to Either small or big
+-- giving size0 low odds (pga high retail price :)
+showTile :: (TileWidth,Color) -> String
+showTile (0,c) = "|" ++ show c 
+showTile (_,c) = "|" ++ show c ++ "  "
+
+intsToLines :: [Int] -> String
 intsToLines = concat . intersperse "\n" . map show 
 
 randInts :: StdGen -> Int -> [Int]
