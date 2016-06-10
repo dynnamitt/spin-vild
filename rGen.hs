@@ -3,19 +3,19 @@ import System.Exit
 import Data.List
 import System.Environment
 
-
-data Quads = One | Two -- Kvadrater i en Tile m'key?
-
-data Tile = Small Color Quads |
-            Big Color Quads
-
-type TileWidth = Int
 type Color = Int -- TODO data type ??
+data Tile = Sgl Color |
+            Dbl Color
+type TileWidth = Int
+
+tileWidth :: Tile -> TileWidth
+tileWidth (Sgl _) = 1
+tileWidth (Dbl _) = 2
 
 -- ctor            
 newTile :: (TileWidth,Color) -> Tile
-newTile (0,c) = Small c One
-newTile (_,c) = Big c Two
+newTile (0,c) = Sgl c
+newTile (_,c) = Dbl c
 
 
 data Floor = Floor { 
@@ -26,15 +26,16 @@ data Floor = Floor {
 
 main = do
   
-  pArgs <- parseArgs
+  floor <- parseArgs
   genA <- getStdGen
   genB <- newStdGen
-  let colors = randInts genA $ maxColors pArgs
-  let widths = randInts genB $ maxSizes pArgs
+  let colors = randInts genA $ maxColors floor
+  let widths = randInts genB $ maxSizes floor
   -- TODO inject \n after x small-tiles 
   --   (1 big-tile-len == 2 small-tile-len )
   --  Buffer/Flush/State !! !
-  putStr $ concat.map showTile $ zip widths colors
+  let tiles = map newTile zip widths colors
+  putStr $ concat.map (\ t -> showTileWithBreak t floor 0) $ zip widths colors
   -- putStr $ intsToLines $ randInts gen 3
   --
 parseArgs :: IO Floor
@@ -65,11 +66,20 @@ showTile (0,c) = "|" ++ show c
 showTile (_,c) = "|" ++ show c ++ "  "
 
 -- new version 
-type State = Int
-showTileWithBreak :: Tile -> Floor -> State -> String
-showTileWithBreak t f s = ""
+type Count = Int
+showTileWithBreak :: Tile -> Floor -> Count -> (String,Count)
+showTileWithBreak t f cnt =
+  let tileW = tileWidth t
+  in
+    if cnt < breakAfter f 
+    then 
+      (showTile2 t, cnt - tileW)
+    else
+      (showTile2 t ++ "\n", 0)
 
-
+showTile2 :: Tile -> String
+showTile2 (Sgl c) = "|" ++ show c 
+showTile2 (Dbl c) = "|" ++ show c ++ "  "
 
 intsToLines :: [Int] -> String
 intsToLines = concat . intersperse "\n" . map show 
