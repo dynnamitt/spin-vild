@@ -1,27 +1,7 @@
 import System.Random
+import System.Exit
 import Data.List
 import System.Environment
-
-
-main = do
-  args <- getArgs 
-  -- arg0=numColors , arg1=tileSizes, 
-  -- arg2=maxTiles , arg3=wallLen
-  let numColors = read $ args !! 0
-  let tileSizes = read $ args !! 1 -- !! special logic
-  let maxTiles = read $ args !! 2
-  -- let wallLen = read $ args !! 3
-  -- TODO maybe?either fix if no args given
-  -- TODO usage print and exit
-  genA <- getStdGen
-  genB <- newStdGen
-  let colors = randInts genA numColors
-  let widths = randInts genB tileSizes
-  -- TODO inject \n after x small-tiles 
-  --   (1 big-tile-len == 2 small-tile-len )
-  --  Buffer/Flush/State !! !
-  putStr $ concat.map showTile $ take maxTiles $ zip widths colors
-  -- putStr $ intsToLines $ randInts gen 3
 
 type TileWidth = Int
 type Color = Int
@@ -29,6 +9,38 @@ type Quads = Int -- Kvadrater i en Tile m'key?
 
 data Tile = Small Color Quads |
             Big Color Quads
+
+main = do
+  
+  pArgs <- parseArgs
+  genA <- getStdGen
+  genB <- newStdGen
+  let colors = randInts genA $ fst pArgs
+  let widths = randInts genB $ snd pArgs
+  -- TODO inject \n after x small-tiles 
+  --   (1 big-tile-len == 2 small-tile-len )
+  --  Buffer/Flush/State !! !
+  putStr $ concat.map showTile $ zip widths colors
+  -- putStr $ intsToLines $ randInts gen 3
+  --
+parseArgs :: IO (Int,Int)
+parseArgs = do
+  args <- getArgs
+  if length args < 2 
+    then do
+      usage
+      exitWith $ ExitFailure 1
+    else do 
+      -- TODO errorhandling
+      let maxColors = read $ args !! 0 :: Int
+      let maxSizes = read $ args !! 1 :: Int
+      return (maxColors , maxSizes)
+
+usage :: IO ()
+usage = do
+  prog <- getProgName
+  putStrLn "usage:"
+  putStrLn $ "  " ++ prog ++ " max-colors max-sizes"
 
 tile :: (TileWidth,Color) -> Tile
 tile (0,c) = Small c 1
