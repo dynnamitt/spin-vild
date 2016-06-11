@@ -1,21 +1,20 @@
 import System.Random
 import System.Exit
-import Data.List
 import System.Environment
 
+import Data.List
 
-data Quads = One | Two -- Kvadrater i en Tile m'key?
 
-data Tile = Small Color Quads |
-            Big Color Quads
+data Tile = Small Color |
+            Big Color
 
 type TileWidth = Int
 type Color = Int -- TODO data type ??
 
 -- ctor            
 newTile :: (TileWidth,Color) -> Tile
-newTile (0,c) = Small c One
-newTile (_,c) = Big c Two
+newTile (0,c) = Small c
+newTile (_,c) = Big c
 
 
 data Floor = Floor { 
@@ -26,11 +25,11 @@ data Floor = Floor {
 
 main = do
   
-  pArgs <- parseArgs
+  floor <- parseArgs
   genA <- getStdGen
   genB <- newStdGen
-  let colors = randInts genA $ maxColors pArgs
-  let widths = randInts genB $ maxSizes pArgs
+  let colors = randInts genA $ maxColors floor
+  let widths = randInts genB $ maxSizes floor
   -- TODO inject \n after x small-tiles 
   --   (1 big-tile-len == 2 small-tile-len )
   --  Buffer/Flush/State !! !
@@ -58,17 +57,25 @@ usage = do
   putStrLn $ "  " ++ prog ++ " max-colors max-sizes break-after"
   -- hmm difficult to exit here
 
+lowestUnixColor = 30
+
 -- always CAPPING size down to Either small or big
 -- giving size0 low odds (pga high retail price :)
 showTile :: (TileWidth,Color) -> String
-showTile (0,c) = "|" ++ show c 
-showTile (_,c) = "|" ++ show c ++ "  "
+showTile (0,c) = nixEsc nixColor 
+  ++ show c ++ " "
+  where nixColor = c + lowestUnixColor
+showTile (_,c) = nixEsc nixColor 
+  ++ show c ++ "   "
+  where nixColor = c + lowestUnixColor
 
--- new version 
+nixEsc :: Int -> String
+nixEsc n = "\ESC[" ++ show n ++ "m"
+
+-- new version maybe later
 type State = Int
 showTileWithBreak :: Tile -> Floor -> State -> String
 showTileWithBreak t f s = ""
-
 
 
 intsToLines :: [Int] -> String
