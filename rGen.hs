@@ -28,6 +28,7 @@ main = do
   floor <- parseArgs
   genA <- getStdGen
   genB <- newStdGen
+  -- pull the number for the lotteri !!
   let colors = randInts genA $ maxColors floor
   let widths = randInts genB $ maxSizes floor
   -- TODO inject \n after x small-tiles 
@@ -57,17 +58,18 @@ usage = do
   putStrLn $ "  " ++ prog ++ " max-colors max-sizes break-after"
   -- hmm difficult to exit here
 
-lowestUnixColor = 30
 
 -- always CAPPING size down to Either small or big
 -- giving size0 low odds (pga high retail price :)
 showTile :: (TileWidth,Color) -> String
-showTile (0,c) = nixEsc nixColor 
-  ++ show c ++ " "
-  where nixColor = c + lowestUnixColor
-showTile (_,c) = nixEsc nixColor 
-  ++ show c ++ "   "
-  where nixColor = c + lowestUnixColor
+showTile (0,c) = bgColor c ++ show c ++ " "
+showTile (_,c) = bgColor c ++ show c ++ "   "
+
+bgColor :: Int -> String
+bgColor n =
+  let bg = 40
+  in 
+    nixEsc $ bg + n
 
 nixEsc :: Int -> String
 nixEsc n = "\ESC[" ++ show n ++ "m"
